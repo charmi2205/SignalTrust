@@ -1,0 +1,1930 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-a11y="off">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="theme-color" content="#ffffff"/>
+<link rel="manifest" href="manifest.json"/>
+<title>SignalTrust — Distributed Trust Intelligence</title>
+<style>
+/* ═══════════════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════════════ */
+:root{
+  /* surfaces */
+  --bg:#f4f4f6;
+  --panel:#ffffff;
+  --surface:#f0f0f3;
+  --surface2:#e8e8ed;
+  --border:#e0e0e8;
+  --border2:#c8c8d4;
+
+  /* text */
+  --text:#111128;
+  --sub:#555570;
+  --faint:#9090a8;
+
+  /* brand */
+  --accent:#4a4de8;
+  --accent-h:#3a3dd0;
+  --accent-bg:rgba(74,77,232,.08);
+  --accent-glow:rgba(74,77,232,.18);
+
+  /* semantic */
+  --safe:#0d9e70;       --safe-bg:rgba(13,158,112,.09);    --safe-glow:rgba(13,158,112,.2);
+  --caution:#c07800;    --caut-bg:rgba(192,120,0,.09);     --caut-glow:rgba(192,120,0,.2);
+  --danger:#d0302a;     --danger-bg:rgba(208,48,42,.09);   --danger-glow:rgba(208,48,42,.2);
+
+  /* clusters */
+  --college:#4a4de8;  --work:#0d9e70;  --family:#c07800;  --unknown:#888899;
+
+  /* elevation */
+  --shadow-xs:0 1px 2px rgba(0,0,0,.05);
+  --shadow-sm:0 1px 4px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05);
+  --shadow-md:0 2px 8px rgba(0,0,0,.07),0 10px 28px rgba(0,0,0,.07);
+  --shadow-lg:0 4px 16px rgba(0,0,0,.09),0 20px 48px rgba(0,0,0,.1);
+
+  /* radii */
+  --r-xs:4px; --r-sm:8px; --r:12px; --r-lg:18px; --r-xl:24px;
+
+  /* spacing */
+  --gap:14px;
+
+  /* typography */
+  --font:'Inter',system-ui,-apple-system,sans-serif;
+  --font-mono:'JetBrains Mono','Fira Mono',ui-monospace,monospace;
+}
+
+[data-theme="dark"]{
+  --bg:#0c0e16;
+  --panel:#121520;
+  --surface:#181d2c;
+  --surface2:#1f2638;
+  --border:#242d42;
+  --border2:#2e3a54;
+  --text:#e4e8f4;
+  --sub:#8892b0;
+  --faint:#4a5470;
+  --accent:#6870ff;
+  --accent-h:#5560ee;
+  --accent-bg:rgba(104,112,255,.1);
+  --accent-glow:rgba(104,112,255,.2);
+  --safe:#2dd4a0;     --safe-bg:rgba(45,212,160,.1);    --safe-glow:rgba(45,212,160,.18);
+  --caution:#f5a623;  --caut-bg:rgba(245,166,35,.1);    --caut-glow:rgba(245,166,35,.18);
+  --danger:#ff5a52;   --danger-bg:rgba(255,90,82,.1);   --danger-glow:rgba(255,90,82,.18);
+  --college:#6870ff;  --work:#2dd4a0;  --family:#f5a623;  --unknown:#607090;
+  --shadow-xs:0 1px 2px rgba(0,0,0,.3);
+  --shadow-sm:0 1px 4px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25);
+  --shadow-md:0 2px 8px rgba(0,0,0,.4),0 10px 28px rgba(0,0,0,.35);
+  --shadow-lg:0 4px 16px rgba(0,0,0,.5),0 20px 48px rgba(0,0,0,.45);
+}
+
+/* a11y mode enlarges text & hit targets */
+[data-a11y="on"]{
+  --base-size:16px;
+  --btn-h:52px;
+  --font:'Inter',system-ui,sans-serif;
+}
+[data-a11y="on"] body{ font-size:16px; }
+[data-a11y="on"] .btn,[data-a11y="on"] .btn-ghost,[data-a11y="on"] .btn-danger{
+  min-height:var(--btn-h,44px);font-size:15px;padding:0 20px;
+}
+[data-a11y="on"] .sc-title,[data-a11y="on"] .rep-name{ font-size:15px; }
+[data-a11y="on"] .verdict-expl{ font-size:15px;line-height:1.7; }
+[data-a11y="on"] .score-big{ font-size:44px; }
+[data-a11y="on"] .risk-badge{ font-size:13px;padding:5px 12px; }
+[data-a11y="on"] .call-btn{ height:64px;font-size:18px; }
+[data-a11y="on"] .ph-call-btn{ height:56px;font-size:16px; }
+
+/* ═══════════════════════════════════════════
+   RESET
+═══════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--font);font-size:13px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;background:var(--bg);color:var(--text);
+  transition:background .2s,color .2s}
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* ═══════════════════════════════════════════
+   DESKTOP SHELL
+═══════════════════════════════════════════ */
+.shell{display:grid;grid-template-rows:56px 1fr;height:100vh;overflow:hidden}
+.shell.phone-mode{opacity:.25;pointer-events:none;filter:blur(2px)}
+
+/* ── Topbar ── */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;
+  background:var(--panel);
+  border-bottom:1px solid var(--border);
+  box-shadow:var(--shadow-xs);
+  z-index:20;gap:12px;
+}
+
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;
+  font-weight:800;font-size:16px;letter-spacing:-.4px;color:var(--accent)}
+.brand-icon{
+  width:32px;height:32px;border-radius:10px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-h));
+  display:flex;align-items:center;justify-content:center;flex:none;
+  box-shadow:0 2px 8px var(--accent-glow)}
+.brand-icon svg{width:18px;height:18px;color:#fff}
+.brand-name{color:var(--text)}
+.brand-badge{
+  font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  background:var(--accent-bg);color:var(--accent);border-radius:4px;
+  padding:2px 6px;margin-left:2px}
+
+.topbar-center{flex:1;display:flex;justify-content:center}
+.tab-bar{display:flex;gap:2px;background:var(--surface);border-radius:10px;padding:3px}
+.tab{padding:5px 14px;border-radius:7px;font-size:12px;font-weight:600;
+  color:var(--faint);cursor:pointer;transition:all .15s;border:none;
+  background:transparent;font-family:var(--font)}
+.tab.active{background:var(--panel);color:var(--text);box-shadow:var(--shadow-xs)}
+.tab:hover:not(.active){color:var(--sub)}
+
+.topbar-right{display:flex;align-items:center;gap:6px}
+.viewer-label{font-size:11px;color:var(--faint);white-space:nowrap}
+
+/* icon button */
+.ibtn{
+  display:flex;align-items:center;justify-content:center;
+  width:34px;height:34px;border-radius:9px;
+  border:1px solid var(--border);background:var(--surface);
+  cursor:pointer;color:var(--sub);transition:all .15s;
+  flex:none;position:relative;font-family:var(--font)}
+.ibtn:hover{background:var(--accent-bg);color:var(--accent);border-color:var(--accent)}
+.ibtn.on{background:var(--accent-bg);color:var(--accent);border-color:var(--accent)}
+.ibtn .bdg{position:absolute;top:-5px;right:-5px;width:16px;height:16px;
+  border-radius:50%;background:var(--danger);color:#fff;font-size:9px;font-weight:700;
+  display:none;align-items:center;justify-content:center;border:2px solid var(--bg)}
+.ibtn .bdg.show{display:flex}
+
+.sim-btn{
+  display:flex;align-items:center;gap:6px;height:34px;padding:0 12px;
+  border-radius:9px;border:1px solid var(--accent);background:var(--accent-bg);
+  color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;
+  font-family:var(--font);transition:all .15s;white-space:nowrap}
+.sim-btn:hover{background:var(--accent);color:#fff}
+
+.status-pill{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--sub);
+  background:var(--surface);border:1px solid var(--border);border-radius:99px;
+  padding:5px 11px;white-space:nowrap}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--safe);
+  box-shadow:0 0 6px var(--safe-glow);transition:all .3s;flex:none}
+
+/* ── Body grid ── */
+.body{display:grid;grid-template-columns:272px 1fr 308px;overflow:hidden}
+.col{border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.col:last-child{border-right:none}
+.col-body{flex:1;overflow-y:auto;padding:16px 14px;
+  display:flex;flex-direction:column;gap:var(--gap)}
+
+/* Tab views */
+.tab-view{display:none;flex-direction:column;gap:var(--gap)}
+.tab-view.active{display:flex}
+
+/* ── Section label ── */
+.sec{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--faint);padding-bottom:8px;border-bottom:1px solid var(--border)}
+
+/* ═══════════════════════════════════════════
+   FORM CONTROLS
+═══════════════════════════════════════════ */
+select,input[type=text],textarea{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);
+  color:var(--text);padding:8px 10px;font-size:12px;width:100%;
+  outline:none;font-family:var(--font);transition:border-color .15s,background .15s;
+  resize:none}
+select:focus,input:focus,textarea:focus{
+  border-color:var(--accent);background:var(--panel);
+  box-shadow:0 0 0 3px var(--accent-bg)}
+select option{background:var(--panel);color:var(--text)}
+.irow{display:flex;gap:6px}
+.irow input{flex:1}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fl{font-size:11px;color:var(--sub);font-weight:600}
+
+/* buttons */
+.btn{
+  background:var(--accent);color:#fff;border:none;border-radius:var(--r-sm);
+  padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;
+  white-space:nowrap;transition:all .15s;font-family:var(--font);
+  display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--accent-h);box-shadow:0 2px 8px var(--accent-glow)}
+.btn-ghost{background:transparent;border:1px solid var(--accent);color:var(--accent);
+  border-radius:var(--r-sm);padding:8px 16px;font-size:12px;font-weight:600;
+  cursor:pointer;font-family:var(--font);transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-ghost:hover{background:var(--accent-bg)}
+.btn-danger{background:var(--danger);color:#fff;border:none;border-radius:var(--r-sm);
+  padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);
+  transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-danger:hover{filter:brightness(1.1)}
+.btn-safe{background:var(--safe);color:#fff;border:none;border-radius:var(--r-sm);
+  padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);
+  transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-safe:hover{filter:brightness(1.1)}
+.btn-sm{padding:5px 10px;font-size:11px;border-radius:6px}
+
+/* ═══════════════════════════════════════════
+   SCENARIO CARDS
+═══════════════════════════════════════════ */
+.sc-card{
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:var(--r);padding:11px 13px;cursor:pointer;
+  box-shadow:var(--shadow-xs);transition:all .15s;position:relative}
+.sc-card::before{content:'';position:absolute;left:0;top:12px;bottom:12px;
+  width:3px;border-radius:0 2px 2px 0;background:var(--border2);transition:background .15s}
+.sc-card:hover{border-color:var(--border2);box-shadow:var(--shadow-sm);transform:translateY(-1px)}
+.sc-card:hover::before{background:var(--accent)}
+.sc-card.active{border-color:var(--accent);background:var(--accent-bg);box-shadow:var(--shadow-sm)}
+.sc-card.active::before{background:var(--accent)}
+.sc-num{font-size:10px;color:var(--faint);font-family:var(--font-mono);margin-bottom:2px}
+.sc-title{font-size:12px;font-weight:700;margin-bottom:3px}
+.sc-desc{font-size:11px;color:var(--sub);line-height:1.45}
+
+/* ═══════════════════════════════════════════
+   GRAPH
+═══════════════════════════════════════════ */
+#graph-wrap{
+  position:relative;overflow:hidden;flex:1;background:var(--bg);
+  background-image:
+    radial-gradient(circle,var(--border) 1px,transparent 1px);
+  background-size:28px 28px}
+[data-theme="dark"] #graph-wrap{
+  background-image:radial-gradient(circle,var(--border) 1px,transparent 1px)}
+#graph-canvas{display:block;width:100%;height:100%}
+
+.graph-hud{
+  position:absolute;bottom:14px;left:14px;
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:var(--r);padding:10px 12px;box-shadow:var(--shadow-sm);
+  display:flex;flex-direction:column;gap:5px}
+.leg-row{display:flex;align-items:center;gap:7px;font-size:10px;color:var(--sub)}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex:none}
+.leg-dash{width:18px;height:2px;flex:none;border-radius:1px}
+
+.graph-chip{
+  position:absolute;top:12px;right:12px;
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:8px;padding:5px 10px;font-size:10px;color:var(--faint);
+  font-family:var(--font-mono);box-shadow:var(--shadow-xs);pointer-events:none}
+
+/* ═══════════════════════════════════════════
+   VERDICT
+═══════════════════════════════════════════ */
+.verdict-card{
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:var(--r);padding:16px;box-shadow:var(--shadow-sm);
+  transition:border-color .3s}
+.verdict-card.safe   {border-left:3px solid var(--safe)}
+.verdict-card.caution{border-left:3px solid var(--caution)}
+.verdict-card.danger {border-left:3px solid var(--danger)}
+
+.verdict-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.risk-badge{
+  font-size:10px;font-weight:700;letter-spacing:.07em;
+  border-radius:var(--r-xs);padding:4px 9px;text-transform:uppercase}
+.badge-safe   {background:var(--safe-bg);color:var(--safe)}
+.badge-caution{background:var(--caut-bg);color:var(--caution)}
+.badge-danger {background:var(--danger-bg);color:var(--danger)}
+
+.score-big{font-size:32px;font-weight:800;letter-spacing:-1.5px;line-height:1}
+.score-max{font-size:12px;color:var(--faint)}
+
+/* segmented bar */
+.seg-bar{display:flex;height:5px;border-radius:3px;overflow:hidden;margin:10px 0;gap:2px}
+.seg{flex:1;border-radius:2px;background:var(--surface2);transition:background .4s}
+.seg.lit-safe{background:var(--safe)}
+.seg.lit-caut{background:var(--caution)}
+.seg.lit-dang{background:var(--danger)}
+
+.zone-labels{display:flex;justify-content:space-between;
+  font-size:9px;color:var(--faint);font-family:var(--font-mono);
+  margin-top:-6px;margin-bottom:10px}
+.zone-labels span.active{font-weight:700}
+.zone-labels .zs.active{color:var(--safe)}
+.zone-labels .zc.active{color:var(--caution)}
+.zone-labels .zd.active{color:var(--danger)}
+
+/* NL explanation */
+.nl-expl{
+  font-size:12.5px;line-height:1.65;color:var(--sub);
+  background:var(--surface);border-radius:var(--r-sm);
+  padding:10px 12px;border-left:3px solid var(--border2);
+  margin-bottom:12px}
+.verdict-expl{font-size:11.5px;color:var(--sub);line-height:1.6}
+
+/* diversity badge */
+.div-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--safe-bg);color:var(--safe);
+  border-radius:var(--r-xs);padding:3px 8px;font-size:10px;font-weight:600;
+  margin-top:8px}
+
+/* reporter cards */
+.rep-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:10px 12px;margin-top:8px}
+.rep-head{display:flex;justify-content:space-between;align-items:flex-start;
+  margin-bottom:6px}
+.rep-name{font-weight:700;font-size:12px}
+.rep-contrib{font-size:11px;font-family:var(--font-mono);color:var(--accent);
+  background:var(--accent-bg);border-radius:4px;padding:2px 6px}
+.rep-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
+.tag{font-size:10px;border-radius:4px;padding:2px 7px;font-family:var(--font-mono)}
+.tl{background:var(--accent-bg);color:var(--accent)}
+.tg{background:var(--caut-bg);color:var(--caution)}
+.tp{background:var(--surface2);border:1px solid var(--border);color:var(--sub)}
+.path-tag{background:var(--safe-bg);color:var(--safe);max-width:180px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* note bubble */
+.rep-note{
+  font-size:11px;color:var(--sub);line-height:1.55;
+  background:var(--panel);border-radius:var(--r-sm);
+  padding:7px 9px;border-left:2px solid var(--border2);
+  font-style:italic;margin-top:4px}
+.rep-note::before{content:'"';color:var(--faint);margin-right:2px}
+.rep-note::after{content:'"';color:var(--faint);margin-left:2px}
+
+.empty{color:var(--faint);font-size:12px;text-align:center;padding:24px 0;line-height:1.7}
+.spinner{width:20px;height:20px;border:2px solid var(--border);
+  border-top-color:var(--accent);border-radius:50%;
+  animation:spin .6s linear infinite;margin:28px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ═══════════════════════════════════════════
+   GATE HISTORY
+═══════════════════════════════════════════ */
+.gate-row{
+  display:flex;align-items:center;gap:10px;
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:9px 11px;box-shadow:var(--shadow-xs)}
+.gate-icon{width:32px;height:32px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;font-size:15px;flex:none}
+.gate-info{flex:1;min-width:0}
+.gate-phone{font-size:12px;font-weight:600;font-family:var(--font-mono);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gate-meta{font-size:10px;color:var(--faint);margin-top:1px}
+.gate-st{font-size:10px;font-weight:700;letter-spacing:.05em;
+  border-radius:4px;padding:2px 7px;text-transform:uppercase;white-space:nowrap}
+.st-accepted{background:var(--safe-bg);color:var(--safe)}
+.st-declined{background:var(--danger-bg);color:var(--danger)}
+.st-pending {background:var(--caut-bg);color:var(--caution)}
+
+/* ═══════════════════════════════════════════
+   DASHBOARD
+═══════════════════════════════════════════ */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dash-card{
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow-xs)}
+.dash-val{font-size:28px;font-weight:800;letter-spacing:-1px;line-height:1;margin-bottom:4px}
+.dash-label{font-size:11px;color:var(--sub)}
+.dash-card.full{grid-column:1/-1}
+
+/* category bar */
+.cat-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.cat-name{font-size:11px;color:var(--sub);width:110px;flex:none;
+  text-transform:capitalize;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cat-bar-wrap{flex:1;background:var(--surface2);border-radius:3px;height:6px;overflow:hidden}
+.cat-bar{height:100%;border-radius:3px;background:var(--accent);transition:width .5s ease}
+.cat-count{font-size:10px;font-family:var(--font-mono);color:var(--faint);
+  width:24px;text-align:right;flex:none}
+
+/* velocity indicator */
+.vel-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  border-radius:var(--r-xs);padding:3px 8px;font-size:11px;font-weight:600}
+
+/* ═══════════════════════════════════════════
+   SYBIL ATTACK DEMO
+═══════════════════════════════════════════ */
+.sybil-wrap{
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:var(--r);padding:16px;box-shadow:var(--shadow-sm)}
+.sybil-title{font-size:13px;font-weight:800;margin-bottom:4px;
+  display:flex;align-items:center;gap:8px}
+.sybil-desc{font-size:11.5px;color:var(--sub);line-height:1.6;margin-bottom:14px}
+
+.sybil-phases{display:flex;gap:8px;margin-bottom:16px}
+.phase-node{
+  flex:1;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:10px 12px;text-align:center;
+  transition:all .3s}
+.phase-node.done{border-color:var(--accent);background:var(--accent-bg)}
+.phase-node.current{border-color:var(--caution);background:var(--caut-bg);
+  animation:phasePulse 1.5s ease infinite}
+@keyframes phasePulse{0%,100%{box-shadow:none}50%{box-shadow:0 0 0 3px var(--caut-glow)}}
+.phase-num{font-size:18px;font-weight:800;line-height:1;margin-bottom:2px}
+.phase-lbl{font-size:10px;color:var(--sub);line-height:1.3}
+
+/* score comparison */
+.score-compare{
+  display:grid;grid-template-columns:1fr auto 1fr;
+  gap:10px;align-items:center;margin-bottom:14px}
+.score-box{text-align:center;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:12px}
+.score-box-val{font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1;
+  transition:color .4s}
+.score-box-lbl{font-size:10px;color:var(--sub);margin-top:3px}
+.score-arrow{font-size:18px;color:var(--faint);text-align:center}
+
+/* reporter cluster vis */
+.cluster-vis{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}
+.rep-dot{
+  display:flex;align-items:center;gap:5px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:99px;padding:4px 9px;font-size:10px;font-weight:600;
+  transition:all .3s}
+.rep-dot.real{border-color:var(--safe);background:var(--safe-bg);color:var(--safe)}
+.rep-dot.fake{border-color:var(--danger-bg);background:var(--danger-bg);color:var(--danger)}
+.rdot{width:6px;height:6px;border-radius:50%;flex:none}
+
+.sybil-insight{
+  font-size:12px;line-height:1.6;color:var(--sub);
+  background:var(--surface);border-radius:var(--r-sm);
+  padding:10px 12px;border-left:3px solid var(--accent)}
+.sybil-insight b{color:var(--text)}
+
+.sybil-btns{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ═══════════════════════════════════════════
+   INCOMING CALL OVERLAY
+═══════════════════════════════════════════ */
+#call-overlay{
+  display:none;position:fixed;inset:0;z-index:200;
+  align-items:flex-end;justify-content:center;padding-bottom:44px;
+  background:rgba(0,0,0,0);transition:background .3s}
+#call-overlay.show{display:flex;background:rgba(0,0,0,.5);backdrop-filter:blur(6px)}
+
+.call-card{
+  width:440px;max-width:calc(100vw - 24px);
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:var(--r-xl);box-shadow:var(--shadow-lg);overflow:hidden;
+  transform:translateY(100px);opacity:0;
+  transition:transform .38s cubic-bezier(.2,.85,.3,1),opacity .3s}
+#call-overlay.show .call-card{transform:translateY(0);opacity:1}
+
+.call-header{
+  height:5px;
+  background:linear-gradient(90deg,var(--accent),var(--safe),var(--caution),var(--accent));
+  background-size:300% 100%;animation:headerFlow 3s linear infinite}
+@keyframes headerFlow{0%{background-position:0 0}100%{background-position:300% 0}}
+.call-header.hd-danger{
+  background:linear-gradient(90deg,var(--danger),var(--caution),var(--danger));
+  background-size:200% 100%;animation:headerFlow 1.5s linear infinite}
+
+.call-body{padding:22px 24px 24px}
+
+/* caller row */
+.caller-row{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+.caller-av{
+  width:58px;height:58px;border-radius:18px;flex:none;
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;position:relative}
+.caller-av-ring{
+  position:absolute;inset:-4px;border-radius:22px;
+  border:2px solid currentColor;opacity:.4;
+  animation:avPulse 1.6s ease infinite}
+@keyframes avPulse{0%,100%{transform:scale(1);opacity:.4}50%{transform:scale(1.07);opacity:.8}}
+.caller-info{flex:1;min-width:0}
+.caller-name{font-size:20px;font-weight:800;letter-spacing:-.4px;margin-bottom:2px}
+.caller-phone{font-size:12px;color:var(--sub);font-family:var(--font-mono);margin-bottom:7px}
+
+/* trust strip */
+.trust-strip{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:12px 14px;margin-bottom:16px}
+.ts-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.ts-label{font-size:11px;font-weight:600;color:var(--sub)}
+.ts-score{font-size:22px;font-weight:800;letter-spacing:-.5px}
+.ts-bar-bg{background:var(--surface2);border-radius:3px;height:5px;overflow:hidden;margin-bottom:8px}
+.ts-bar{height:100%;border-radius:3px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.ts-expl{font-size:11.5px;color:var(--sub);line-height:1.55}
+
+/* reporter chips */
+.rep-chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:18px}
+.chip{display:flex;align-items:center;gap:5px;background:var(--surface);
+  border:1px solid var(--border);border-radius:99px;padding:4px 11px;font-size:11px}
+.chip-dot{width:6px;height:6px;border-radius:50%;flex:none}
+
+/* a11y simple verdict */
+.a11y-verdict{
+  display:none;
+  background:var(--surface);border-radius:var(--r-sm);
+  padding:12px 14px;margin-bottom:14px;font-size:15px;
+  font-weight:600;line-height:1.5;text-align:center}
+[data-a11y="on"] .a11y-verdict{display:block}
+[data-a11y="on"] .ts-expl{display:none}
+
+/* call action buttons */
+.call-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.call-btn{
+  height:54px;border:none;border-radius:14px;
+  font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font);
+  display:flex;align-items:center;justify-content:center;gap:9px;transition:all .15s}
+.call-btn:active{transform:scale(.97)}
+.cb-accept{background:var(--safe);color:#fff;box-shadow:0 4px 14px var(--safe-glow)}
+.cb-accept:hover{filter:brightness(1.08)}
+.cb-decline{background:var(--danger);color:#fff;box-shadow:0 4px 14px var(--danger-glow)}
+.cb-decline:hover{filter:brightness(1.08)}
+
+.call-result{display:none;text-align:center;padding:10px 0 2px;
+  font-size:13px;font-weight:600}
+.call-result.show{display:block}
+
+/* ═══════════════════════════════════════════
+   SIMULATE PANEL
+═══════════════════════════════════════════ */
+#sim-overlay{
+  display:none;position:fixed;inset:0;z-index:150;
+  align-items:flex-end;justify-content:center;padding-bottom:40px;
+  background:rgba(0,0,0,.45);backdrop-filter:blur(5px)}
+#sim-overlay.open{display:flex}
+.sim-panel{
+  width:400px;max-width:calc(100vw - 24px);
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:var(--r-xl);padding:22px;box-shadow:var(--shadow-lg)}
+.sim-panel-head{font-size:14px;font-weight:800;margin-bottom:16px;
+  display:flex;justify-content:space-between;align-items:center}
+.close-x{background:none;border:none;cursor:pointer;color:var(--faint);
+  font-size:20px;line-height:1;padding:0 4px;transition:color .15s}
+.close-x:hover{color:var(--danger)}
+
+/* ═══════════════════════════════════════════
+   PHONE FRAME
+═══════════════════════════════════════════ */
+#phone-overlay{
+  display:none;position:fixed;inset:0;z-index:100;
+  align-items:center;justify-content:center;
+  background:rgba(0,0,0,.6);backdrop-filter:blur(8px)}
+#phone-overlay.open{display:flex}
+
+.phone-wrap{position:relative}
+.ph-close{position:absolute;top:-12px;right:-12px;width:30px;height:30px;
+  border-radius:50%;background:var(--panel);border:1px solid var(--border);
+  color:var(--sub);cursor:pointer;font-size:16px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow-sm);z-index:10;transition:color .15s}
+.ph-close:hover{color:var(--danger)}
+
+.phone{
+  width:390px;height:760px;
+  background:var(--panel);border-radius:48px;
+  border:11px solid #111;
+  box-shadow:0 0 0 2px #2a2a2a,var(--shadow-lg);
+  overflow:hidden;display:flex;flex-direction:column;
+  position:relative}
+.ph-notch{
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:110px;height:28px;
+  background:#111;border-radius:0 0 18px 18px;z-index:10}
+
+.ph-inner{flex:1;overflow-y:auto;overflow-x:hidden;
+  margin-top:28px;background:var(--bg)}
+
+.ph-topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:11px 16px 9px;background:var(--panel);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:5}
+.ph-brand{font-weight:800;font-size:15px;color:var(--accent);
+  display:flex;align-items:center;gap:7px}
+.ph-brand svg{width:17px;height:17px}
+
+/* phone call screen */
+.ph-call-wrap{margin:12px;background:var(--panel);border:1px solid var(--border);
+  border-radius:20px;overflow:hidden;box-shadow:var(--shadow-md)}
+.ph-call-hbar{height:4px;background:linear-gradient(90deg,var(--accent),var(--safe),var(--accent));
+  background-size:200% 100%;animation:headerFlow 2s linear infinite}
+.ph-call-hbar.hd-danger{
+  background:linear-gradient(90deg,var(--danger),var(--caution),var(--danger));
+  background-size:200% 100%}
+.ph-call-body{padding:16px}
+.ph-call-caller{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.ph-av{width:46px;height:46px;border-radius:14px;font-size:22px;
+  display:flex;align-items:center;justify-content:center;flex:none;position:relative}
+.ph-av-ring{position:absolute;inset:-3px;border-radius:17px;
+  border:2px solid currentColor;opacity:.4;animation:avPulse 1.6s ease infinite}
+.ph-name{font-size:15px;font-weight:800;margin-bottom:1px}
+.ph-phone{font-size:10px;color:var(--sub);font-family:var(--font-mono);margin-bottom:4px}
+.ph-badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.07em;
+  border-radius:4px;padding:2px 7px;text-transform:uppercase}
+
+/* score ring */
+.ph-score-ring-row{display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:10px}
+.ph-score-ring-info{flex:1}
+.ph-score-lbl{font-size:10px;color:var(--sub);font-weight:600;margin-bottom:3px}
+.ph-score-val{font-size:24px;font-weight:800;letter-spacing:-1px;line-height:1}
+.ph-score-sub{font-size:10px;color:var(--faint)}
+.ph-ring-svg{width:64px;height:64px;flex:none}
+.ph-ring-track{fill:none;stroke:var(--surface2);stroke-width:6}
+.ph-ring-arc{fill:none;stroke-width:6;stroke-linecap:round;
+  stroke-dasharray:164;stroke-dashoffset:164;
+  transform-origin:50% 50%;transform:rotate(-90deg);
+  transition:stroke-dashoffset .5s ease,stroke .3s}
+
+.ph-trust-bar-bg{background:var(--surface2);border-radius:3px;height:4px;
+  overflow:hidden;margin-bottom:8px}
+.ph-trust-bar{height:100%;border-radius:3px;transition:width .5s}
+.ph-expl{font-size:10px;color:var(--faint);line-height:1.5;margin-bottom:12px}
+
+/* a11y simple text on phone */
+.ph-a11y-txt{display:none;font-size:14px;font-weight:600;
+  text-align:center;padding:8px 0;line-height:1.5}
+[data-a11y="on"] .ph-a11y-txt{display:block}
+[data-a11y="on"] .ph-expl{display:none}
+
+.ph-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ph-call-btn{height:46px;border:none;border-radius:12px;
+  font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);
+  display:flex;align-items:center;justify-content:center;gap:7px;transition:all .15s}
+.ph-call-btn:active{transform:scale(.96)}
+.ph-accept{background:var(--safe);color:#fff}
+.ph-decline{background:var(--danger);color:#fff}
+.ph-result{display:none;text-align:center;padding:8px 0;font-size:12px;font-weight:600}
+.ph-result.show{display:block}
+
+/* phone scenarios (horizontal pill scroll) */
+.ph-sc-scroll{display:flex;gap:8px;overflow-x:auto;padding:0 14px 12px;
+  scroll-snap-type:x mandatory;-ms-overflow-style:none;scrollbar-width:none}
+.ph-sc-scroll::-webkit-scrollbar{display:none}
+.ph-sc-pill{flex:none;scroll-snap-align:start;background:var(--panel);
+  border:1px solid var(--border);border-radius:var(--r);
+  padding:10px 13px;cursor:pointer;min-width:175px;box-shadow:var(--shadow-xs);
+  transition:all .15s}
+.ph-sc-pill:hover,.ph-sc-pill.active{border-color:var(--accent);background:var(--accent-bg)}
+.ph-sc-id{font-size:10px;color:var(--faint);font-family:var(--font-mono);margin-bottom:2px}
+.ph-sc-title{font-size:12px;font-weight:700;margin-bottom:2px}
+.ph-sc-ph{font-size:10px;color:var(--accent);font-family:var(--font-mono)}
+
+/* phone gate history */
+.ph-gate-row{display:flex;align-items:center;gap:9px;
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:8px 11px;margin-bottom:6px;
+  box-shadow:var(--shadow-xs)}
+.ph-gate-icon{width:26px;height:26px;border-radius:7px;
+  display:flex;align-items:center;justify-content:center;font-size:12px;flex:none}
+.ph-gate-info{flex:1;min-width:0}
+.ph-gate-ph{font-size:11px;font-weight:600;font-family:var(--font-mono);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ph-gate-meta{font-size:9px;color:var(--faint);margin-top:1px}
+.ph-gate-st{font-size:9px;font-weight:700;letter-spacing:.05em;
+  border-radius:4px;padding:2px 6px;text-transform:uppercase;white-space:nowrap}
+
+.ph-sec{padding:0 14px;margin-bottom:6px}
+.ph-sec-lbl{font-size:10px;font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--faint);margin-bottom:8px}
+.ph-lookup{padding:0 14px 14px}
+.ph-footer{height:20px}
+
+/* ═══════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════ */
+#toast{position:fixed;bottom:22px;left:50%;
+  transform:translateX(-50%) translateY(50px);opacity:0;
+  background:var(--panel);border:1px solid var(--border2);color:var(--text);
+  padding:8px 18px;border-radius:99px;font-size:12px;font-weight:500;
+  pointer-events:none;z-index:999;box-shadow:var(--shadow-md);
+  transition:transform .25s,opacity .25s;white-space:nowrap}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+@keyframes shimmer{0%,100%{box-shadow:none}50%{box-shadow:0 0 0 3px var(--accent-glow)}}
+.pulse{animation:shimmer .75s ease 3}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     DESKTOP SHELL
+══════════════════════════════════════ -->
+<div class="shell" id="desktop">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <a class="brand" href="#">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <span class="brand-name">SignalTrust</span>
+      <span class="brand-badge">v3</span>
+    </a>
+
+    <div class="topbar-center">
+      <div class="tab-bar">
+        <button class="tab active" onclick="switchTab('score')">Score</button>
+        <button class="tab" onclick="switchTab('sybil')">⚔ Sybil Demo</button>
+        <button class="tab" onclick="switchTab('dashboard')">Dashboard</button>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <span class="viewer-label">Viewing as</span>
+      <select id="user-sel" style="width:130px" onchange="onUserChange()">
+        <option>Loading…</option>
+      </select>
+
+      <!-- A11y -->
+      <button class="ibtn" id="a11y-btn" title="Accessibility mode" onclick="toggleA11y()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="4" r="2"/><path d="M9 9h6M12 9v6M9 21l3-6 3 6"/>
+        </svg>
+      </button>
+
+      <!-- Theme -->
+      <button class="ibtn" id="theme-btn" title="Toggle theme (Ctrl+D)" onclick="toggleTheme()">
+        <svg id="theme-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5"/>
+          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+      </button>
+
+      <!-- Phone preview -->
+      <button class="ibtn" id="phone-btn" title="Phone view (Ctrl+P)" onclick="openPhone()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="5" y="2" width="14" height="20" rx="3"/>
+          <circle cx="12" cy="18" r="1" fill="currentColor" stroke="none"/>
+        </svg>
+        <span class="bdg" id="ph-bdg"></span>
+      </button>
+
+      <!-- Simulate call -->
+      <button class="sim-btn" onclick="openSim()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+        </svg>
+        Simulate Call
+      </button>
+
+      <div class="status-pill">
+        <div class="sdot" id="sdot"></div>
+        <span id="stxt">Connecting</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="body">
+
+    <!-- ── LEFT COLUMN ── -->
+    <div class="col">
+      <div class="col-body">
+
+        <!-- SCORE TAB LEFT -->
+        <div class="tab-view active" id="tv-score-left">
+          <div class="sec">Scenarios</div>
+          <div id="sc-list" style="display:flex;flex-direction:column;gap:7px"></div>
+
+          <div class="sec">Custom Lookup</div>
+          <div class="irow">
+            <input type="text" id="custom-ph" placeholder="+91-XXXXX-XXXXX"
+              onkeydown="if(event.key==='Enter')lookupCustom()"/>
+            <button class="btn btn-sm" onclick="lookupCustom()">Check</button>
+          </div>
+
+          <div class="sec">Submit a Report</div>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <div class="fg"><span class="fl">Phone number</span>
+              <input type="text" id="rep-ph" placeholder="+91-XXXXX-XXXXX"/>
+            </div>
+            <div class="fg"><span class="fl">Category</span>
+              <select id="rep-cat">
+                <option value="otp_scam">OTP / Banking Scam</option>
+                <option value="financial_fraud">Financial Fraud</option>
+                <option value="impersonation">Impersonation</option>
+                <option value="robocall">Robocall</option>
+                <option value="telemarketing">Telemarketing</option>
+                <option value="unknown">Unknown</option>
+              </select>
+            </div>
+            <div class="fg"><span class="fl">Note <span style="color:var(--faint);font-weight:400">(optional — what did they say?)</span></span>
+              <textarea id="rep-note" rows="2" placeholder="e.g. Called claiming to be my bank, asked for OTP…" style="height:56px"></textarea>
+            </div>
+            <button class="btn-ghost" onclick="submitReport()">Submit Report</button>
+          </div>
+
+          <div class="sec">Call Gate History</div>
+          <div id="gate-history"><div class="empty" style="padding:10px 0">No gated calls yet.</div></div>
+        </div>
+
+        <!-- SYBIL TAB LEFT -->
+        <div class="tab-view" id="tv-sybil-left">
+          <div class="sec">How it works</div>
+          <div style="font-size:12px;color:var(--sub);line-height:1.7">
+            <p style="margin-bottom:8px">A <b style="color:var(--text)">Sybil attack</b> is when one adversary creates many fake accounts to inflate or deflate a number's reputation.</p>
+            <p style="margin-bottom:8px">Most spam-detection systems count reports naively. 5 fake reports = 5 votes.</p>
+            <p>SignalTrust's <b style="color:var(--accent)">cluster diversity multiplier</b> defeats this: 5 reports from one cluster = 1× weight. Reports from 3 independent clusters = 1.5× weight.</p>
+          </div>
+          <div class="sec" style="margin-top:4px">Privacy</div>
+          <div style="font-size:11.5px;color:var(--sub);line-height:1.65;
+            background:var(--surface);border-radius:var(--r-sm);padding:10px 12px">
+            <b style="color:var(--text)">Phone numbers are never stored.</b><br/>
+            Every number is SHA-256 hashed before it reaches the database. The display shows only a masked form (e.g. XXXXX-00001). Even if the DB were leaked, no phone number could be recovered.
+          </div>
+          <div class="sec" style="margin-top:4px">Rate-limiting</div>
+          <div style="font-size:11.5px;color:var(--sub);line-height:1.65;
+            background:var(--surface);border-radius:var(--r-sm);padding:10px 12px">
+            <b style="color:var(--text)">One confirm per user per report.</b><br/>
+            The <code style="color:var(--accent)">/confirm</code> endpoint rejects duplicate confirmations and self-confirmations, closing the reputation-farming loop.
+          </div>
+        </div>
+
+        <!-- DASHBOARD TAB LEFT -->
+        <div class="tab-view" id="tv-dash-left">
+          <div class="sec">Network Health</div>
+          <div id="dash-left-content">
+            <div class="spinner"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── CENTER COLUMN (graph / sybil center) ── -->
+    <div class="col" style="border:none">
+
+      <!-- SCORE VIEW: graph -->
+      <div id="cv-score" style="flex:1;position:relative;display:flex;flex-direction:column">
+        <div id="graph-wrap" style="flex:1;position:relative">
+          <canvas id="graph-canvas" style="display:block;width:100%;height:100%"></canvas>
+          <div class="graph-hud">
+            <div class="leg-row"><div class="leg-dot" style="background:var(--college)"></div>College friends</div>
+            <div class="leg-row"><div class="leg-dot" style="background:var(--work)"></div>Colleagues</div>
+            <div class="leg-row"><div class="leg-dot" style="background:var(--family)"></div>Family</div>
+            <div class="leg-row"><div class="leg-dot" style="background:var(--unknown)"></div>External</div>
+            <div class="leg-row" style="margin-top:3px">
+              <div class="leg-dash" style="background:var(--border2)"></div>contact
+            </div>
+            <div class="leg-row">
+              <div class="leg-dash" style="background:var(--danger);opacity:.8"></div>report path
+            </div>
+          </div>
+          <div class="graph-chip" id="graph-chip">CONTACT TRUST GRAPH</div>
+        </div>
+      </div>
+
+      <!-- SYBIL VIEW: live demo -->
+      <div id="cv-sybil" style="display:none;flex:1;overflow-y:auto;padding:20px">
+        <div class="sybil-wrap">
+          <div class="sybil-title">
+            <span style="font-size:20px">⚔️</span>
+            Sybil Attack — Live Demo
+          </div>
+          <div class="sybil-desc">
+            Watch the cluster diversity multiplier defend in real time. First we simulate 5 coordinated fake accounts — one cluster, five reports. Then two independent real contacts report the same number. See which one actually moves the score.
+          </div>
+
+          <!-- Phase stepper -->
+          <div class="sybil-phases">
+            <div class="phase-node" id="ph0">
+              <div class="phase-num" style="color:var(--faint)">·</div>
+              <div class="phase-lbl">Start</div>
+            </div>
+            <div class="phase-node" id="ph1">
+              <div class="phase-num">5</div>
+              <div class="phase-lbl">Fake accounts<br>one cluster</div>
+            </div>
+            <div class="phase-node" id="ph2">
+              <div class="phase-num">+2</div>
+              <div class="phase-lbl">Real reporters<br>2 clusters</div>
+            </div>
+          </div>
+
+          <!-- Score comparison -->
+          <div class="score-compare">
+            <div class="score-box">
+              <div class="score-box-val" id="sybil-score-before" style="color:var(--faint)">—</div>
+              <div class="score-box-lbl">After fakes (5 reports, 1 cluster)</div>
+            </div>
+            <div class="score-arrow">→</div>
+            <div class="score-box">
+              <div class="score-box-val" id="sybil-score-after" style="color:var(--faint)">—</div>
+              <div class="score-box-lbl">After real reporters (3 clusters)</div>
+            </div>
+          </div>
+
+          <!-- Reporter cluster dots -->
+          <div class="cluster-vis" id="sybil-dots"></div>
+
+          <!-- Insight -->
+          <div class="sybil-insight" id="sybil-insight">
+            Click <b>Phase 1</b> to begin the attack simulation.
+          </div>
+
+          <div style="height:14px"></div>
+          <div class="sybil-btns">
+            <button class="btn" onclick="runSybil(1)">Phase 1 — Launch Fake Accounts</button>
+            <button class="btn-ghost" onclick="runSybil(2)" id="sybil-p2-btn" style="opacity:.4">Phase 2 — Add Real Reports</button>
+            <button class="btn-danger btn-sm" onclick="runSybil(0)">Reset</button>
+          </div>
+          <div style="height:10px"></div>
+          <div style="font-size:11px;color:var(--faint);line-height:1.6">
+            Powered by <code style="color:var(--accent)">POST /sybil-demo</code>. Each phase writes real reports to the DB and returns a live score. The diversity multiplier is the only difference.
+          </div>
+        </div>
+      </div>
+
+      <!-- DASHBOARD VIEW -->
+      <div id="cv-dash" style="display:none;flex:1;overflow-y:auto;padding:20px">
+        <div id="dash-main"><div class="spinner"></div></div>
+      </div>
+
+    </div>
+
+    <!-- ── RIGHT COLUMN ── -->
+    <div class="col">
+      <div class="col-body">
+        <div class="sec">Verdict</div>
+        <div id="verdict-area">
+          <div class="empty">Select a scenario or enter a phone number to see a live verdict.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     SIMULATE CALL PANEL
+══════════════════════════════════════ -->
+<div id="sim-overlay" onclick="simBg(event)">
+  <div class="sim-panel">
+    <div class="sim-panel-head">
+      Simulate Incoming Call
+      <button class="close-x" onclick="closeSim()">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="fg"><span class="fl">Caller phone number</span>
+        <input type="text" id="sim-phone" value="+91-90000-00001" placeholder="+91-XXXXX-XXXXX"/>
+      </div>
+      <div class="fg"><span class="fl">Caller name (optional)</span>
+        <input type="text" id="sim-name" placeholder="Unknown Caller"/>
+      </div>
+      <div class="fg"><span class="fl">Receiving user (callee)</span>
+        <select id="sim-callee"></select>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" style="flex:1" onclick="fireSim()">📞 Send Call</button>
+        <button class="btn-ghost" onclick="closeSim()">Cancel</button>
+      </div>
+      <div style="font-size:11px;color:var(--faint);line-height:1.6">
+        Fires <code style="color:var(--accent)">POST /gate</code> exactly as a real telecom webhook would. The callee sees the notification before their phone rings.
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     INCOMING CALL NOTIFICATION
+══════════════════════════════════════ -->
+<div id="call-overlay">
+  <div class="call-card">
+    <div class="call-header" id="call-hbar"></div>
+    <div class="call-body">
+      <div class="caller-row">
+        <div class="caller-av" id="call-av">
+          <div class="caller-av-ring"></div>
+        </div>
+        <div class="caller-info">
+          <div class="caller-name" id="call-name">Unknown</div>
+          <div class="caller-phone" id="call-phone"></div>
+          <div id="call-badge-wrap"></div>
+        </div>
+      </div>
+
+      <!-- a11y simple verdict -->
+      <div class="a11y-verdict" id="call-a11y-txt"></div>
+
+      <div class="trust-strip">
+        <div class="ts-head">
+          <span class="ts-label">SignalTrust Score</span>
+          <span class="ts-score" id="call-score">—</span>
+        </div>
+        <div class="ts-bar-bg"><div class="ts-bar" id="call-bar" style="width:0%"></div></div>
+        <div class="ts-expl" id="call-expl"></div>
+      </div>
+
+      <div class="rep-chips" id="call-chips"></div>
+
+      <div class="call-actions" id="call-actions">
+        <button class="call-btn cb-decline" onclick="respondCall('decline')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+          Decline
+        </button>
+        <button class="call-btn cb-accept" onclick="respondCall('accept')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+          </svg>
+          Accept
+        </button>
+      </div>
+      <div class="call-result" id="call-result"></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     PHONE FRAME
+══════════════════════════════════════ -->
+<div id="phone-overlay" onclick="phBg(event)">
+  <div class="phone-wrap">
+    <button class="ph-close" onclick="closePhone()">✕</button>
+    <div class="phone">
+      <div class="ph-notch"></div>
+      <div class="ph-inner" id="ph-inner">
+        <div class="ph-topbar">
+          <div class="ph-brand">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+            SignalTrust
+          </div>
+          <select id="ph-user" style="width:100px;font-size:11px;padding:4px 7px"
+            onchange="onPhUser()"></select>
+        </div>
+
+        <!-- incoming call screen -->
+        <div id="ph-call-screen" style="display:none">
+          <div class="ph-call-wrap">
+            <div class="ph-call-hbar" id="ph-hbar"></div>
+            <div class="ph-call-body">
+              <div style="font-size:10px;font-weight:700;color:var(--faint);
+                letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px">
+                Incoming Call ·
+                <span style="color:var(--accent)">SignalTrust Pre-Screen</span>
+              </div>
+              <div class="ph-call-caller">
+                <div class="ph-av" id="ph-av">
+                  <div class="ph-av-ring"></div>
+                </div>
+                <div>
+                  <div class="ph-name" id="ph-name">Unknown</div>
+                  <div class="ph-phone" id="ph-phone-txt"></div>
+                  <span class="ph-badge" id="ph-badge"></span>
+                </div>
+              </div>
+              <div class="ph-score-ring-row">
+                <div class="ph-score-ring-info">
+                  <div class="ph-score-lbl">Trust Score</div>
+                  <div class="ph-score-val" id="ph-score-val">—</div>
+                  <div class="ph-score-sub">/100</div>
+                </div>
+                <svg class="ph-ring-svg" viewBox="0 0 64 64">
+                  <circle class="ph-ring-track" cx="32" cy="32" r="26"/>
+                  <circle class="ph-ring-arc" id="ph-ring" cx="32" cy="32" r="26"/>
+                </svg>
+              </div>
+              <div class="ph-trust-bar-bg"><div class="ph-trust-bar" id="ph-bar" style="width:0%"></div></div>
+              <div class="ph-expl" id="ph-expl"></div>
+              <div class="ph-a11y-txt" id="ph-a11y-txt"></div>
+              <div class="ph-btns">
+                <button class="ph-call-btn ph-decline" onclick="phRespond('decline')">✕ Decline</button>
+                <button class="ph-call-btn ph-accept"  onclick="phRespond('accept')">✓ Accept</button>
+              </div>
+              <div class="ph-result" id="ph-result"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ph-sec"><div class="ph-sec-lbl">Scenarios</div></div>
+        <div class="ph-sc-scroll" id="ph-sc-scroll"></div>
+
+        <div class="ph-sec" id="ph-hist-sec">
+          <div class="ph-sec-lbl">Call Gate History</div>
+        </div>
+        <div style="padding:0 14px" id="ph-gate-hist">
+          <div style="font-size:11px;color:var(--faint);padding:6px 0">No gated calls yet.</div>
+        </div>
+
+        <div class="ph-lookup">
+          <div class="ph-sec-lbl" style="margin-bottom:7px">Custom Lookup</div>
+          <div class="irow">
+            <input type="text" id="ph-custom" placeholder="+91-XXXXX-XXXXX"
+              onkeydown="if(event.key==='Enter')phCustom()"/>
+            <button class="btn btn-sm" onclick="phCustom()">Go</button>
+          </div>
+        </div>
+        <div class="ph-footer"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ================================================================
+   SignalTrust v3 — Frontend
+   Backend: http://127.0.0.1:8001
+================================================================ */
+const API="http://127.0.0.1:8001";
+let me="you", phMe="you", graphData=null, activePhone=null;
+let animId=null, simNodes=[], simEdges=[], simTick=0;
+let nodePos={}, highlighted=new Set(), trustPaths=[];
+let activeGateId=null, sseConn=null;
+let sybilPhase=0;
+
+/* ── TOKENS ─────────────────────────────────────────────────────── */
+const CC=(cl)=>{
+  const dk=document.documentElement.getAttribute("data-theme")==="dark";
+  return ({college_friends:dk?"#6870ff":"#4a4de8",
+           colleagues:dk?"#2dd4a0":"#0d9e70",
+           family:dk?"#f5a623":"#c07800",
+           unknown:dk?"#607090":"#888899"})[cl]||"#888";
+};
+
+/* ── THEME ──────────────────────────────────────────────────────── */
+function toggleTheme(){
+  const h=document.documentElement,next=h.getAttribute("data-theme")==="light"?"dark":"light";
+  h.setAttribute("data-theme",next);localStorage.setItem("st-theme",next);
+  _themeIcon(next);if(graphData)drawGraph();
+}
+function _themeIcon(t){
+  document.getElementById("theme-icon").innerHTML=t==="dark"
+    ?`<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>`
+    :`<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>`;
+}
+(()=>{const t=localStorage.getItem("st-theme")||"light";
+  document.documentElement.setAttribute("data-theme",t);_themeIcon(t);})();
+
+/* ── A11Y ───────────────────────────────────────────────────────── */
+function toggleA11y(){
+  const h=document.documentElement;
+  const next=h.getAttribute("data-a11y")==="on"?"off":"on";
+  h.setAttribute("data-a11y",next);
+  localStorage.setItem("st-a11y",next);
+  document.getElementById("a11y-btn").classList.toggle("on",next==="on");
+  toast(next==="on"?"♿ Accessible mode ON":"Accessible mode off");
+}
+(()=>{const a=localStorage.getItem("st-a11y")||"off";
+  document.documentElement.setAttribute("data-a11y",a);
+  if(a==="on")document.getElementById("a11y-btn").classList.add("on");})();
+
+/* ── TABS ───────────────────────────────────────────────────────── */
+function switchTab(name){
+  document.querySelectorAll(".tab").forEach((t,i)=>
+    t.classList.toggle("active",["score","sybil","dashboard"][i]===name));
+  // left views
+  ["score","sybil","dashboard"].forEach(n=>{
+    const lv=document.getElementById(`tv-${n}-left`);
+    if(lv)lv.classList.toggle("active",n===name);
+  });
+  // center views
+  document.getElementById("cv-score").style.display=name==="score"?"flex":"none";
+  document.getElementById("cv-sybil").style.display=name==="sybil"?"block":"none";
+  document.getElementById("cv-dash").style.display=name==="dashboard"?"block":"none";
+  if(name==="dashboard")loadDashboard();
+}
+
+/* ── BOOT ───────────────────────────────────────────────────────── */
+async function boot(){
+  try{
+    await loadUsers();
+    await loadScenarios();
+    await loadGraph();
+    setStatus(true);
+    connectSSE(me);
+    refreshGates();
+  }catch(e){setStatus(false);console.error(e);}
+}
+function setStatus(ok){
+  const d=document.getElementById("sdot");
+  d.style.background=ok?"var(--safe)":"var(--danger)";
+  d.style.boxShadow=ok?"0 0 8px var(--safe-glow)":"none";
+  document.getElementById("stxt").textContent=ok?"Engine ready":"Offline";
+}
+
+/* ── USERS ──────────────────────────────────────────────────────── */
+async function loadUsers(){
+  const users=await api("/users");
+  const sel=document.getElementById("user-sel");
+  sel.innerHTML=users.map(u=>`<option value="${u.id}" ${u.id==="you"?"selected":""}>${u.name}</option>`).join("");
+  me=sel.value;
+}
+function onUserChange(){
+  me=document.getElementById("user-sel").value;
+  connectSSE(me);loadGraph();refreshGates();
+  if(activePhone)lookupPhone(activePhone);
+}
+
+/* ── SCENARIOS ──────────────────────────────────────────────────── */
+let scenariosCache=[];
+async function loadScenarios(){
+  scenariosCache=await api("/scenarios");
+  document.getElementById("sc-list").innerHTML=
+    scenariosCache.map(s=>`
+      <div class="sc-card" id="sc-${s.id}" onclick="selSc(${s.id},'${s.phone}')">
+        <div class="sc-num">SC ${s.id} · ${s.phone}</div>
+        <div class="sc-title">${s.label}</div>
+        <div class="sc-desc">${s.description}</div>
+      </div>`).join("");
+  document.getElementById("ph-sc-scroll").innerHTML=
+    scenariosCache.map(s=>`
+      <div class="ph-sc-pill" id="ph-sc-${s.id}" onclick="phSelSc(${s.id},'${s.phone}')">
+        <div class="ph-sc-id">SC ${s.id}</div>
+        <div class="ph-sc-title">${s.label}</div>
+        <div class="ph-sc-ph">${s.phone}</div>
+      </div>`).join("");
+}
+function selSc(id,phone){
+  document.querySelectorAll(".sc-card").forEach(c=>c.classList.remove("active"));
+  const c=document.getElementById(`sc-${id}`);
+  if(c){c.classList.add("active","pulse");setTimeout(()=>c.classList.remove("pulse"),2400);}
+  activePhone=phone;
+  document.getElementById("custom-ph").value="";
+  lookupPhone(phone);
+}
+function phSelSc(id,phone){
+  document.querySelectorAll(".ph-sc-pill").forEach(c=>c.classList.remove("active"));
+  document.getElementById(`ph-sc-${id}`)?.classList.add("active");
+  activePhone=phone;
+  lookupPhone(phone);
+  document.querySelectorAll(".sc-card").forEach(c=>c.classList.remove("active"));
+  document.getElementById(`sc-${id}`)?.classList.add("active");
+}
+
+/* ── LOOKUP ─────────────────────────────────────────────────────── */
+function lookupCustom(){
+  const ph=document.getElementById("custom-ph").value.trim();
+  if(!ph)return;
+  document.querySelectorAll(".sc-card").forEach(c=>c.classList.remove("active"));
+  activePhone=ph;lookupPhone(ph);
+}
+function phCustom(){
+  const ph=document.getElementById("ph-custom").value.trim();
+  if(!ph)return;activePhone=ph;lookupPhone(ph);
+}
+async function lookupPhone(phone){
+  document.getElementById("verdict-area").innerHTML='<div class="spinner"></div>';
+  try{
+    const d=await api(`/score/${encodeURIComponent(phone)}/${me}`);
+    renderVerdict(phone,d);
+    highlighted=new Set(d.reporters.map(r=>r.id));
+    trustPaths=d.reporters.filter(r=>r.path)
+      .map(r=>({nodes:r.path.split(" -> ").map(n=>idByName(n))}));
+    drawGraph();
+    document.getElementById("graph-chip").textContent=
+      `${d.reporters.length} reporter(s) · score ${d.score}`;
+  }catch(e){
+    document.getElementById("verdict-area").innerHTML=
+      `<div class="empty">API unreachable.<br><code style="color:var(--accent)">uvicorn main:app --port 8001</code></div>`;
+  }
+}
+function idByName(n){return graphData?.nodes.find(x=>x.name===n)?.id||null;}
+
+/* ── VERDICT ────────────────────────────────────────────────────── */
+function renderVerdict(phone,d){
+  const {risk_level,score,reporters,explanation,cluster_diversity,natural_language}=d;
+  const cls=risk_level==="HIGH RISK"?"danger":risk_level==="CAUTION"?"caution":"safe";
+  const color=`var(--${cls==="danger"?"danger":cls})`;
+
+  // segmented bar (10 segs)
+  const segs=Array.from({length:10},(_,i)=>{
+    const pct=(i+1)*10;
+    let lit="";
+    if(pct<=score){
+      if(pct<=30)lit="lit-safe";
+      else if(pct<=70)lit="lit-caut";
+      else lit="lit-dang";
+    }
+    return `<div class="seg ${lit}"></div>`;
+  }).join("");
+
+  const repCards=reporters.length===0
+    ?`<div class="empty" style="padding:8px 0">No reports on record.</div>`
+    :[...reporters].sort((a,b)=>b.contribution-a.contribution).map(r=>`
+      <div class="rep-card">
+        <div class="rep-head">
+          <span class="rep-name">${r.name}</span>
+          <span class="rep-contrib">+${r.contribution.toFixed(3)}</span>
+        </div>
+        <div class="rep-tags">
+          <span class="tag ${r.trust_type.startsWith("local")?"tl":"tg"}">${r.trust_type}</span>
+          <span class="tag tp">${r.category.replace(/_/g," ")}</span>
+          <span class="tag tp">trust ${r.trust}</span>
+          <span class="tag tp">recency ${r.recency}</span>
+          ${r.path?`<span class="tag path-tag" title="${r.path}">↪ ${r.path}</span>`:""}
+        </div>
+        ${r.note?`<div class="rep-note">${r.note}</div>`:""}
+      </div>`).join("");
+
+  const a11y=document.documentElement.getAttribute("data-a11y")==="on";
+  const simpleExpl=a11yText(risk_level,score,reporters,cluster_diversity);
+
+  document.getElementById("verdict-area").innerHTML=`
+    <div class="verdict-card ${cls}">
+      <div class="verdict-top">
+        <span class="risk-badge badge-${cls}">${risk_level}</span>
+        <span class="score-big" style="color:${color}">${score}</span>
+        <span class="score-max">/ 100</span>
+      </div>
+      <div class="seg-bar">${segs}</div>
+      <div class="zone-labels">
+        <span class="zs ${score<30?"active":""}">SAFE &lt;30</span>
+        <span class="zc ${score>=30&&score<70?"active":""}">CAUTION 30–70</span>
+        <span class="zd ${score>=70?"active":""}">HIGH RISK &gt;70</span>
+      </div>
+      ${a11y?`<div class="nl-expl">${simpleExpl}</div>`:
+              `<div class="nl-expl">${explanation}</div>`}
+      ${cluster_diversity>1?`<div class="div-badge">
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+          <path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        ${cluster_diversity}× cluster diversity bonus — ${cluster_diversity>=1.5?"3+":"2"} independent circles
+      </div>`:""}
+    </div>
+    <div style="margin-top:12px">
+      <div class="sec" style="margin-bottom:6px">Reporters (${reporters.length})</div>
+      ${repCards}
+    </div>
+    <div style="margin-top:10px;font-size:10px;color:var(--faint);font-family:var(--font-mono)">${phone}</div>`;
+}
+
+function a11yText(rl,score,reps,div){
+  if(reps.length===0)return "Nobody in your network has flagged this number. It might be safe, but be careful.";
+  const n=reps.length;
+  const top=[...reps].sort((a,b)=>b.contribution-a.contribution)[0];
+  if(rl==="HIGH RISK")
+    return `🚨 Warning — this number tried to scam ${n} of your contact${n>1?"s":""}, including ${top.name}. We strongly recommend declining.`;
+  if(rl==="CAUTION")
+    return `⚠️ Caution — ${top.name} flagged this number for ${top.category.replace(/_/g," ")}. Answer carefully.`;
+  return `✅ This number looks safe — very few concerns in your network.`;
+}
+
+/* ── REPORT ─────────────────────────────────────────────────────── */
+async function submitReport(){
+  const phone=document.getElementById("rep-ph").value.trim();
+  const cat=document.getElementById("rep-cat").value;
+  const note=document.getElementById("rep-note").value.trim();
+  if(!phone){toast("Enter a phone number first");return;}
+  try{
+    await api("/report",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({reporter_id:me,phone,category:cat,note})});
+    toast("Report submitted ✓");
+    document.getElementById("rep-ph").value="";
+    document.getElementById("rep-note").value="";
+    if(activePhone===phone)lookupPhone(phone);
+  }catch(e){toast("Error: "+e.message);}
+}
+
+/* ── SYBIL DEMO ─────────────────────────────────────────────────── */
+async function runSybil(phase){
+  if(phase===0){
+    // reset
+    try{
+      await api("/sybil-demo",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({phase:0,callee_id:me})});
+      sybilPhase=0;
+      document.getElementById("sybil-score-before").textContent="—";
+      document.getElementById("sybil-score-after").textContent="—";
+      document.getElementById("sybil-dots").innerHTML="";
+      document.getElementById("sybil-insight").innerHTML='Click <b>Phase 1</b> to begin the attack simulation.';
+      document.getElementById("sybil-p2-btn").style.opacity=".4";
+      ["ph0","ph1","ph2"].forEach(id=>document.getElementById(id).classList.remove("done","current"));
+      toast("Sybil demo reset");
+    }catch(e){toast("Error: "+e.message);}
+    return;
+  }
+  try{
+    const r=await api("/sybil-demo",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({phase,callee_id:me})});
+    sybilPhase=phase;
+
+    // Update phase indicators
+    document.getElementById("ph0").classList.add("done");
+    if(phase>=1){document.getElementById("ph1").classList.add(phase===1?"current":"done");
+      document.getElementById("ph1").classList.remove(phase===1?"done":"current");}
+    if(phase>=2){document.getElementById("ph1").classList.remove("current");
+      document.getElementById("ph1").classList.add("done");
+      document.getElementById("ph2").classList.add("current");}
+
+    // Score boxes
+    if(phase===1){
+      animateNum("sybil-score-before",0,r.score,"var(--caution)");
+      document.getElementById("sybil-p2-btn").style.opacity="1";
+    } else {
+      animateNum("sybil-score-after",0,r.score,"var(--danger)");
+      document.getElementById("ph2").classList.remove("current");
+      document.getElementById("ph2").classList.add("done");
+    }
+
+    // Reporter dots
+    const dots=document.getElementById("sybil-dots");
+    if(phase===1){
+      dots.innerHTML=r.reporters_added.map(n=>
+        `<div class="rep-dot fake"><div class="rdot" style="background:var(--danger)"></div>${n}</div>`
+      ).join("");
+    } else {
+      dots.innerHTML+=r.reporters_added.map(n=>
+        `<div class="rep-dot real"><div class="rdot" style="background:var(--safe)"></div>${n}</div>`
+      ).join("");
+    }
+
+    // Insight
+    document.getElementById("sybil-insight").innerHTML=
+      r.insight.replace(/(\d+\.?\d*×)/g,"<b style='color:var(--accent)'>$1</b>")
+               .replace(/(cluster diversity)/gi,"<b style='color:var(--accent)'>$1</b>");
+
+    toast(`Phase ${phase} complete — score: ${r.score}`);
+  }catch(e){toast("Sybil demo error: "+e.message);}
+}
+
+function animateNum(id,from,to,color){
+  const el=document.getElementById(id);
+  el.style.color=color;
+  const dur=800,start=performance.now();
+  function step(now){
+    const p=Math.min((now-start)/dur,1);
+    const val=from+(to-from)*easeOut(p);
+    el.textContent=val.toFixed(1);
+    if(p<1)requestAnimationFrame(step);
+    else el.textContent=to.toFixed(1);
+  }
+  requestAnimationFrame(step);
+}
+function easeOut(t){return 1-Math.pow(1-t,3);}
+
+/* ── DASHBOARD ──────────────────────────────────────────────────── */
+async function loadDashboard(){
+  try{
+    const d=await api("/dashboard");
+    const maxCat=d.top_categories.reduce((m,c)=>Math.max(m,c.count),1);
+    const velColor=d.reports_24h>5?"var(--danger)":d.reports_24h>2?"var(--caution)":"var(--safe)";
+    const velLabel=d.reports_24h>5?"High":"Normal";
+
+    const catBars=d.top_categories.map(c=>`
+      <div class="cat-row">
+        <div class="cat-name">${c.category.replace(/_/g," ")}</div>
+        <div class="cat-bar-wrap">
+          <div class="cat-bar" style="width:${(c.count/maxCat*100).toFixed(0)}%"></div>
+        </div>
+        <div class="cat-count">${c.count}</div>
+      </div>`).join("");
+
+    const dashHTML=`
+      <div class="dash-grid">
+        <div class="dash-card">
+          <div class="dash-val" style="color:var(--accent)">${d.total_reports}</div>
+          <div class="dash-label">Total reports</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-val" style="color:var(--text)">${d.total_users}</div>
+          <div class="dash-label">Network nodes</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-val" style="color:var(--safe)">${d.calls_blocked}</div>
+          <div class="dash-label">Calls blocked</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-val" style="color:var(--caution)">${d.calls_allowed}</div>
+          <div class="dash-label">Calls accepted</div>
+        </div>
+        <div class="dash-card full">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div style="font-size:12px;font-weight:700">Spam velocity (24 h)</div>
+            <div class="vel-badge" style="background:${velColor}22;color:${velColor}">
+              ${d.reports_24h} reports · ${velLabel}
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--sub);margin-bottom:14px">Category breakdown</div>
+          ${catBars}
+        </div>
+        <div class="dash-card full">
+          <div style="font-size:12px;font-weight:700;margin-bottom:8px">Avg gate score</div>
+          <div style="font-size:28px;font-weight:800;letter-spacing:-1px;
+            color:${d.avg_gate_score>=70?"var(--danger)":d.avg_gate_score>=30?"var(--caution)":"var(--safe)"}"
+            >${d.avg_gate_score}</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:3px">
+            Across ${d.total_gates} gated call${d.total_gates!==1?"s":""}
+          </div>
+        </div>
+      </div>`;
+
+    document.getElementById("dash-main").innerHTML=dashHTML;
+    document.getElementById("dash-left-content").innerHTML=`
+      <div class="dash-card" style="margin-bottom:8px">
+        <div class="dash-val" style="font-size:22px;color:var(--accent)">${d.total_reports}</div>
+        <div class="dash-label">Reports in network</div>
+      </div>
+      <div class="dash-card" style="margin-bottom:8px">
+        <div class="dash-val" style="font-size:22px;color:var(--safe)">${d.calls_blocked}</div>
+        <div class="dash-label">Calls blocked</div>
+      </div>
+      <div style="font-size:11px;color:var(--sub);line-height:1.6;
+        background:var(--surface);border-radius:var(--r-sm);padding:10px 12px">
+        <b style="color:var(--text)">Spam velocity (24h):</b>
+        <span style="color:${velColor};font-weight:700"> ${d.reports_24h} reports</span>
+      </div>`;
+  }catch(e){
+    document.getElementById("dash-main").innerHTML=
+      `<div class="empty">Could not load dashboard data.</div>`;
+  }
+}
+
+/* ── GATE HISTORY ────────────────────────────────────────────────── */
+async function refreshGates(){
+  try{
+    const gates=await api(`/gates/${me}?limit=8`);
+    renderGateHistory(gates,"gate-history");
+    renderPhGateHistory(gates);
+  }catch(e){}
+}
+function renderGateHistory(gates,id){
+  const el=document.getElementById(id);
+  if(!gates?.length){el.innerHTML='<div class="empty" style="padding:8px 0">No gated calls yet.</div>';return;}
+  el.innerHTML=gates.map(g=>{
+    const cls=g.risk_level==="HIGH RISK"?"danger":g.risk_level==="CAUTION"?"caution":"safe";
+    const emoji=cls==="danger"?"🚨":cls==="caution"?"⚠️":"✅";
+    const stcls=g.status==="accepted"?"st-accepted":g.status==="declined"?"st-declined":"st-pending";
+    return `<div class="gate-row">
+      <div class="gate-icon" style="background:var(--${cls}-bg)">${emoji}</div>
+      <div class="gate-info">
+        <div class="gate-phone">${g.caller_phone}</div>
+        <div class="gate-meta">${g.caller_name||"Unknown"} · ${ago(g.created_at)} · ${g.score}</div>
+      </div>
+      <span class="gate-st ${stcls}">${g.status.toUpperCase()}</span>
+    </div>`;
+  }).join("");
+}
+function renderPhGateHistory(gates){
+  const el=document.getElementById("ph-gate-hist");
+  if(!gates?.length){el.innerHTML='<div style="font-size:11px;color:var(--faint);padding:6px 0">No gated calls yet.</div>';return;}
+  el.innerHTML=gates.map(g=>{
+    const cls=g.risk_level==="HIGH RISK"?"danger":g.risk_level==="CAUTION"?"caution":"safe";
+    const emoji=cls==="danger"?"🚨":cls==="caution"?"⚠️":"✅";
+    const stcls=g.status==="accepted"?"st-accepted":g.status==="declined"?"st-declined":"st-pending";
+    return `<div class="ph-gate-row">
+      <div class="ph-gate-icon" style="background:var(--${cls}-bg)">${emoji}</div>
+      <div class="ph-gate-info">
+        <div class="ph-gate-ph">${g.caller_phone}</div>
+        <div class="ph-gate-meta">${g.caller_name||"Unknown"} · ${g.score}</div>
+      </div>
+      <span class="ph-gate-st ${stcls}">${g.status.toUpperCase()}</span>
+    </div>`;
+  }).join("");
+}
+function ago(ts){const s=Math.floor(Date.now()/1000-ts);
+  return s<60?s+"s ago":s<3600?Math.floor(s/60)+"m ago":Math.floor(s/3600)+"h ago";}
+
+/* ── SSE ─────────────────────────────────────────────────────────── */
+function connectSSE(uid){
+  if(sseConn){sseConn.close();sseConn=null;}
+  sseConn=new EventSource(`${API}/stream/${uid}`);
+  sseConn.onmessage=e=>{
+    const ev=JSON.parse(e.data);
+    if(ev.type==="incoming_call"){
+      if(uid===me)showCallNotif(ev);
+      if(uid===phMe)showPhCallScreen(ev);
+      document.getElementById("ph-bdg").classList.add("show");
+      document.getElementById("ph-bdg").textContent="1";
+    }
+    if(ev.type==="call_resolved")setTimeout(refreshGates,400);
+  };
+}
+
+/* ── INCOMING CALL NOTIFICATION ─────────────────────────────────── */
+function showCallNotif(ev){
+  activeGateId=ev.gate_id;
+  const cls=ev.risk_level==="HIGH RISK"?"danger":ev.risk_level==="CAUTION"?"caution":"safe";
+  const col=`var(--${cls==="danger"?"danger":cls})`;
+  const emoji=cls==="danger"?"🚨":cls==="caution"?"⚠️":"👤";
+
+  const hbar=document.getElementById("call-hbar");
+  hbar.className="call-header"+(cls==="danger"?" hd-danger":"");
+
+  // avatar
+  const av=document.getElementById("call-av");
+  av.style.background=`var(--${cls}-bg)`;
+  av.style.color=col;
+  av.innerHTML=`<div class="caller-av-ring"></div><span style="position:relative">${emoji}</span>`;
+
+  document.getElementById("call-name").textContent=ev.caller_name||"Unknown Caller";
+  document.getElementById("call-phone").textContent=ev.caller_phone;
+  document.getElementById("call-badge-wrap").innerHTML=
+    `<span class="risk-badge badge-${cls}">${ev.risk_level}</span>`;
+
+  // a11y simple text
+  document.getElementById("call-a11y-txt").textContent=
+    a11yText(ev.risk_level,ev.score,ev.reporters||[],ev.cluster_diversity||1);
+  document.getElementById("call-a11y-txt").style.color=col;
+
+  // score
+  document.getElementById("call-score").textContent=ev.score+" / 100";
+  document.getElementById("call-score").style.color=col;
+  const bar=document.getElementById("call-bar");
+  bar.style.background=col;setTimeout(()=>bar.style.width=ev.score+"%",60);
+  document.getElementById("call-expl").textContent=ev.explanation;
+
+  // reporter chips
+  const chips=document.getElementById("call-chips");
+  const reps=ev.reporters||[];
+  chips.innerHTML=reps.slice(0,4).map(r=>{
+    const isL=r.trust_type?.startsWith("local");
+    const cc=isL?"var(--accent)":"var(--caution)";
+    return `<span class="chip"><span class="chip-dot" style="background:${cc}"></span>
+      ${r.name} · ${r.category.replace(/_/g," ")}
+      ${r.note?`<span style="color:var(--faint)">· "${r.note.slice(0,30)}…"</span>`:""}
+    </span>`;
+  }).join("")+(reps.length>4?`<span class="chip" style="color:var(--faint)">+${reps.length-4} more</span>`:
+    reps.length===0?`<span style="font-size:11px;color:var(--faint)">No prior reports — first contact</span>`:"");
+
+  document.getElementById("call-actions").style.display="grid";
+  const res=document.getElementById("call-result");
+  res.className="call-result";res.textContent="";
+
+  document.getElementById("call-overlay").classList.add("show");
+}
+
+function dismissCallNotif(){
+  document.getElementById("call-overlay").classList.remove("show");
+  document.getElementById("ph-bdg").classList.remove("show");
+  setTimeout(()=>{activeGateId=null;},400);
+}
+
+async function respondCall(dec){
+  if(!activeGateId)return;
+  const gid=activeGateId;
+  document.getElementById("call-actions").style.display="none";
+  const res=document.getElementById("call-result");
+  res.className="call-result show";
+  res.style.color=dec==="accept"?"var(--safe)":"var(--danger)";
+  res.textContent=dec==="accept"?"✓ Accepted — your phone is now ringing.":"✕ Declined — call silently disconnected.";
+  setTimeout(dismissCallNotif,2200);
+  try{
+    await api(`/gate/${gid}/respond`,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({decision:dec,user_id:me})});
+    setTimeout(refreshGates,500);
+  }catch(e){toast("Respond error: "+e.message);}
+}
+
+/* ── PHONE CALL SCREEN ──────────────────────────────────────────── */
+function showPhCallScreen(ev){
+  const cls=ev.risk_level==="HIGH RISK"?"danger":ev.risk_level==="CAUTION"?"caution":"safe";
+  const col=`var(--${cls==="danger"?"danger":cls})`;
+  const emoji=cls==="danger"?"🚨":cls==="caution"?"⚠️":"👤";
+
+  document.getElementById("ph-hbar").className=
+    "ph-call-hbar"+(cls==="danger"?" hd-danger":"");
+
+  const av=document.getElementById("ph-av");
+  av.style.background=`var(--${cls}-bg)`;av.style.color=col;
+  av.innerHTML=`<div class="ph-av-ring"></div><span style="position:relative">${emoji}</span>`;
+
+  document.getElementById("ph-name").textContent=ev.caller_name||"Unknown";
+  document.getElementById("ph-phone-txt").textContent=ev.caller_phone;
+  const badge=document.getElementById("ph-badge");
+  badge.textContent=ev.risk_level;badge.className=`ph-badge badge-${cls}`;
+  badge.style.cssText=`background:var(--${cls}-bg);color:var(--${cls==="danger"?"danger":cls})`;
+
+  document.getElementById("ph-score-val").textContent=ev.score;
+  document.getElementById("ph-score-val").style.color=col;
+  const bar=document.getElementById("ph-bar");
+  bar.style.background=col;setTimeout(()=>bar.style.width=ev.score+"%",60);
+
+  // ring
+  const circ=2*Math.PI*26;
+  const offset=circ-(ev.score/100)*circ;
+  const arc=document.getElementById("ph-ring");
+  arc.style.stroke=col;
+  setTimeout(()=>arc.style.strokeDashoffset=offset,60);
+
+  document.getElementById("ph-expl").textContent=ev.explanation;
+  document.getElementById("ph-a11y-txt").textContent=
+    a11yText(ev.risk_level,ev.score,ev.reporters||[],ev.cluster_diversity||1);
+  document.getElementById("ph-a11y-txt").style.color=col;
+
+  document.getElementById("ph-result").className="ph-result";
+  document.getElementById("ph-call-screen").style.display="block";
+  document.getElementById("ph-inner").scrollTop=0;
+  if(!document.getElementById("phone-overlay").classList.contains("open"))openPhone();
+}
+
+async function phRespond(dec){
+  if(!activeGateId)return;
+  const gid=activeGateId;
+  const res=document.getElementById("ph-result");
+  res.className="ph-result show";
+  res.style.color=dec==="accept"?"var(--safe)":"var(--danger)";
+  res.textContent=dec==="accept"?"✓ Accepted — phone ringing!":"✕ Declined — call blocked.";
+  setTimeout(()=>{document.getElementById("ph-call-screen").style.display="none";
+    document.getElementById("ph-bdg").classList.remove("show");},2200);
+  dismissCallNotif();
+  try{
+    await api(`/gate/${gid}/respond`,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({decision:dec,user_id:phMe})});
+    setTimeout(refreshGates,500);
+  }catch(e){toast("Respond error: "+e.message);}
+}
+
+/* ── SIMULATE PANEL ─────────────────────────────────────────────── */
+function openSim(){
+  const src=document.getElementById("user-sel");
+  const dst=document.getElementById("sim-callee");
+  dst.innerHTML=src.innerHTML;dst.value=me;
+  document.getElementById("sim-overlay").classList.add("open");
+}
+function closeSim(){document.getElementById("sim-overlay").classList.remove("open");}
+function simBg(e){if(e.target===document.getElementById("sim-overlay"))closeSim();}
+
+async function fireSim(){
+  const phone=document.getElementById("sim-phone").value.trim();
+  const name=document.getElementById("sim-name").value.trim();
+  const callee=document.getElementById("sim-callee").value;
+  if(!phone){toast("Enter a phone number");return;}
+  closeSim();
+  try{
+    const r=await api("/gate",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({caller_phone:phone,caller_name:name||null,callee_id:callee})});
+    if(callee===me&&!activeGateId){
+      showCallNotif({
+        gate_id:r.gate_id,caller_phone:phone,caller_name:name||"Unknown Caller",
+        risk_level:r.verdict.risk_level,score:r.verdict.score,
+        explanation:r.verdict.explanation,reporters:r.verdict.reporters,
+        cluster_diversity:r.verdict.cluster_diversity
+      });
+    }
+    toast(`Gate created — ${r.gate_id}`);
+    setTimeout(refreshGates,500);
+  }catch(e){toast("Error: "+e.message);}
+}
+
+/* ── PHONE FRAME ─────────────────────────────────────────────────── */
+function openPhone(){
+  const src=document.getElementById("user-sel");
+  const dst=document.getElementById("ph-user");
+  dst.innerHTML=src.innerHTML;dst.value=me;phMe=me;
+  document.getElementById("phone-overlay").classList.add("open");
+  document.getElementById("desktop").classList.add("phone-mode");
+  document.getElementById("phone-btn").classList.add("on");
+}
+function closePhone(){
+  document.getElementById("phone-overlay").classList.remove("open");
+  document.getElementById("desktop").classList.remove("phone-mode");
+  document.getElementById("phone-btn").classList.remove("on");
+}
+function phBg(e){if(e.target===document.getElementById("phone-overlay"))closePhone();}
+function onPhUser(){phMe=document.getElementById("ph-user").value;connectSSE(phMe);}
+
+/* ── GRAPH ───────────────────────────────────────────────────────── */
+async function loadGraph(){
+  graphData=await api(`/graph/${me}`);
+  initSim(graphData);
+}
+function initSim(data){
+  const cvs=document.getElementById("graph-canvas");
+  const W=cvs.offsetWidth||700,H=cvs.offsetHeight||500;
+  const anch={college_friends:{x:W*.38,y:H*.38},colleagues:{x:W*.70,y:H*.42},
+    family:{x:W*.50,y:H*.72},unknown:{x:W*.18,y:H*.62}};
+  simNodes=data.nodes.map(n=>{
+    const s=nodePos[n.id],c=anch[n.cluster]||{x:W/2,y:H/2};
+    return{...n,x:s?s.x:c.x+(Math.random()-.5)*140,y:s?s.y:c.y+(Math.random()-.5)*110,vx:0,vy:0};
+  });
+  simEdges=data.edges;
+  if(animId)cancelAnimationFrame(animId);
+  simTick=0;runLayout(W,H);
+}
+function runLayout(W,H){
+  function step(){applyF(W,H);simTick++;drawGraph();
+    if(simTick<230){animId=requestAnimationFrame(step);}
+    else{simNodes.forEach(n=>{nodePos[n.id]={x:n.x,y:n.y}});drawGraph();}}
+  step();
+}
+function applyF(W,H){
+  const a=Math.max(.01,1-simTick/230),nm={};simNodes.forEach(n=>nm[n.id]=n);
+  for(let i=0;i<simNodes.length;i++)for(let j=i+1;j<simNodes.length;j++){
+    const a2=simNodes[i],b=simNodes[j];
+    const dx=b.x-a2.x,dy=b.y-a2.y,d=Math.sqrt(dx*dx+dy*dy)||1;
+    const f=(2400/(d*d))*a;
+    a2.vx-=(dx/d)*f;a2.vy-=(dy/d)*f;b.vx+=(dx/d)*f;b.vy+=(dy/d)*f;
+  }
+  for(const e of simEdges){const a2=nm[e.source],b=nm[e.target];if(!a2||!b)continue;
+    const dx=b.x-a2.x,dy=b.y-a2.y,d=Math.sqrt(dx*dx+dy*dy)||1;
+    const f=((d-85)*.035)*a;a2.vx+=(dx/d)*f;a2.vy+=(dy/d)*f;b.vx-=(dx/d)*f;b.vy-=(dy/d)*f;}
+  simNodes.forEach(n=>{
+    n.vx+=(W/2-n.x)*.003*a;n.vy+=(H/2-n.y)*.003*a;
+    n.vx*=.72;n.vy*=.72;
+    n.x=Math.max(22,Math.min(W-22,n.x+n.vx));
+    n.y=Math.max(22,Math.min(H-22,n.y+n.vy));
+  });
+}
+function drawGraph(){
+  const cvs=document.getElementById("graph-canvas");
+  const W=cvs.offsetWidth||700,H=cvs.offsetHeight||500;
+  cvs.width=W;cvs.height=H;
+  const ctx=cvs.getContext("2d");ctx.clearRect(0,0,W,H);
+  const nm={};simNodes.forEach(n=>nm[n.id]=n);
+  const dk=document.documentElement.getAttribute("data-theme")==="dark";
+
+  // edges
+  for(const e of simEdges){
+    const a=nm[e.source],b=nm[e.target];if(!a||!b)continue;
+    const hi=highlighted.has(a.id)||highlighted.has(b.id);
+    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);
+    ctx.strokeStyle=hi?(dk?"rgba(104,112,255,.35)":"rgba(74,77,232,.2)")
+                      :(dk?"rgba(255,255,255,.06)":"rgba(0,0,30,.07)");
+    ctx.lineWidth=hi?1.8:1;ctx.stroke();
+  }
+  // trust paths
+  for(const tp of trustPaths){
+    const ids=tp.nodes.filter(Boolean);if(ids.length<2)continue;
+    ctx.save();ctx.setLineDash([5,4]);
+    ctx.strokeStyle=dk?"rgba(255,90,82,.8)":"rgba(208,48,42,.75)";
+    ctx.lineWidth=2;ctx.beginPath();
+    const f=nm[ids[0]];if(f)ctx.moveTo(f.x,f.y);
+    for(let i=1;i<ids.length;i++){const nn=nm[ids[i]];if(nn)ctx.lineTo(nn.x,nn.y);}
+    ctx.stroke();ctx.restore();
+    if(ids.length>=2){
+      const pv=nm[ids[ids.length-2]],la=nm[ids[ids.length-1]];
+      if(pv&&la)drawArr(ctx,pv.x,pv.y,la.x,la.y,dk?"rgba(255,90,82,.9)":"rgba(208,48,42,.9)");
+    }
+  }
+  // nodes
+  for(const n of simNodes){
+    const isY=n.is_current_user,isH=highlighted.has(n.id);
+    const col=CC(n.cluster);const r=isY?11:isH?8:5;
+    // glow
+    if(isY||isH){
+      const grd=ctx.createRadialGradient(n.x,n.y,r,n.x,n.y,r+12);
+      grd.addColorStop(0,isY?"rgba(74,77,232,.2)":"rgba(208,48,42,.15)");
+      grd.addColorStop(1,"transparent");
+      ctx.beginPath();ctx.arc(n.x,n.y,r+12,0,Math.PI*2);ctx.fillStyle=grd;ctx.fill();
+    }
+    ctx.beginPath();ctx.arc(n.x,n.y,r,0,Math.PI*2);
+    ctx.fillStyle=isY?(dk?"#fff":"#111128"):isH?col:col+(dk?"70":"44");ctx.fill();
+    if(isY){ctx.beginPath();ctx.arc(n.x,n.y,r+3,0,Math.PI*2);
+      ctx.strokeStyle=dk?"rgba(104,112,255,.9)":"rgba(74,77,232,.9)";ctx.lineWidth=2;ctx.stroke();}
+    else if(isH){ctx.beginPath();ctx.arc(n.x,n.y,r+2.5,0,Math.PI*2);
+      ctx.strokeStyle=dk?"rgba(255,90,82,.7)":"rgba(208,48,42,.7)";ctx.lineWidth=1.8;ctx.stroke();}
+    if(isY||isH||n.pagerank>0.055){
+      ctx.font=`${isY||isH?700:500} 10.5px Inter,system-ui`;
+      ctx.fillStyle=isY?(dk?"#fff":"#111128"):isH?col:(dk?"rgba(255,255,255,.42)":"rgba(0,0,30,.42)");
+      ctx.textAlign="center";ctx.fillText(n.name,n.x,n.y-r-6);
+    }
+  }
+  // cluster labels
+  const cls={};simNodes.forEach(n=>{(cls[n.cluster]=cls[n.cluster]||[]).push(n);});
+  for(const[cl,ns]of Object.entries(cls)){if(cl==="unknown")continue;
+    const lbl=cl==="college_friends"?"CLUSTER A — COLLEGE":cl==="colleagues"?"CLUSTER B — WORK":"CLUSTER C — FAMILY";
+    const ax=ns.reduce((s,n)=>s+n.x,0)/ns.length;
+    const my=Math.min(...ns.map(n=>n.y));
+    ctx.font="9px Inter,system-ui";
+    ctx.fillStyle=CC(cl)+(dk?"44":"33");ctx.textAlign="center";
+    ctx.fillText(lbl,ax,my-22);
+  }
+}
+function drawArr(ctx,x1,y1,x2,y2,color){
+  const ang=Math.atan2(y2-y1,x2-x1),l=8;
+  ctx.save();ctx.fillStyle=color;ctx.beginPath();
+  ctx.moveTo(x2,y2);
+  ctx.lineTo(x2-l*Math.cos(ang-.4),y2-l*Math.sin(ang-.4));
+  ctx.lineTo(x2-l*Math.cos(ang+.4),y2-l*Math.sin(ang+.4));
+  ctx.closePath();ctx.fill();ctx.restore();
+}
+
+/* ── API ─────────────────────────────────────────────────────────── */
+async function api(path,opts){
+  const r=await fetch(API+path,opts);
+  if(!r.ok){const t=await r.text().catch(()=>"");throw new Error(`${r.status} ${t}`);}
+  return r.json();
+}
+
+/* ── TOAST ───────────────────────────────────────────────────────── */
+function toast(msg){
+  const el=document.getElementById("toast");el.textContent=msg;
+  el.classList.add("show");setTimeout(()=>el.classList.remove("show"),3000);
+}
+
+/* ── RESIZE ──────────────────────────────────────────────────────── */
+let rT;window.addEventListener("resize",()=>{
+  clearTimeout(rT);rT=setTimeout(()=>{if(graphData)initSim(graphData);},200);
+});
+
+/* ── KEYBOARD ────────────────────────────────────────────────────── */
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){
+    closePhone();closeSim();
+    if(document.getElementById("call-overlay").classList.contains("show"))dismissCallNotif();
+  }
+  if(e.ctrlKey&&e.key==="d"){e.preventDefault();toggleTheme();}
+  if(e.ctrlKey&&e.key==="p"){e.preventDefault();
+    document.getElementById("phone-overlay").classList.contains("open")?closePhone():openPhone();}
+});
+
+window.addEventListener("load",boot);
+</script>
+</body>
+</html>
