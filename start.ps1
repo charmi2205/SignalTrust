@@ -1,12 +1,12 @@
-# SignalTrust — start the backend and open the frontend
+# SignalTrust - start the backend and open the frontend
 # Run this from C:\Users\HP\SignalTrust\
 
 $backendDir = "$PSScriptRoot\backend"
 $frontendFile = "$PSScriptRoot\frontend\index.html"
 
 Write-Host ""
-Write-Host "  SignalTrust — Distributed Trust Intelligence Network" -ForegroundColor Cyan
-Write-Host "  ─────────────────────────────────────────────────────" -ForegroundColor DarkGray
+Write-Host "  SignalTrust - Distributed Trust Intelligence Network" -ForegroundColor Cyan
+Write-Host "  -----------------------------------------------------" -ForegroundColor DarkGray
 Write-Host ""
 
 # Check if port 8001 is already in use
@@ -19,7 +19,7 @@ if ($portInUse) {
 
 # Seed database if it doesn't exist yet
 if (-not (Test-Path "$backendDir\signaltrust.db")) {
-    Write-Host "  [*] First run — seeding database..." -ForegroundColor Yellow
+    Write-Host "  [*] First run - seeding database..." -ForegroundColor Yellow
     python "$backendDir\seed.py"
 }
 
