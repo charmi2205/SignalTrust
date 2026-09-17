@@ -275,7 +275,6 @@ def sybil_demo(body: SybilDemoIn):
         ph_hash = hash_phone(SYBIL_PHONE)
         ph_mask = mask_phone(SYBIL_PHONE)
         ts_now  = time.time()
-        conn2 = get_conn()
         for uid, name, cluster in reals:
             conn.execute(
                 "INSERT OR IGNORE INTO users (id,name,cluster) VALUES (?,?,?)",
